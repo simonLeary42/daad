@@ -1,4 +1,4 @@
-# daad: Discord ANSI Adapter
+# daad: Discord Ansi ADapter
 
 converts ANSI color escape sequences from stdin into the limited 4-bit sequences supported by discord.
 rounds 256color and true color escape sequences to the colors displayed in the discord client using Euclidian distance.
