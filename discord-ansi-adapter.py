@@ -137,28 +137,16 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
 
     if len(sequence_numbers) == 2:  # 4 bit formatting AND color
         if sequence_numbers[0] not in [0, 1, 4]:
-            print(
-                f"invalid 2 digit sequence 1st num: {sequence_numbers[0]}",
-                file=sys.stderr,
-            )
+            print(f"invalid 2 digit sequence 1st num: {sequence_numbers[0]}", file=sys.stderr)
         if sequence_numbers[1] not in (list(range(30, 38)) + list(range(40, 48))):
-            print(
-                f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}",
-                file=sys.stderr,
-            )
+            print(f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
         return sequence_numbers
 
     if len(sequence_numbers) == 3:  # 8 bit color
         if sequence_numbers[0] not in [38, 48]:
-            print(
-                f"invalid 3 digit sequence 1st num: {sequence_numbers[0]}",
-                file=sys.stderr,
-            )
+            print(f"invalid 3 digit sequence 1st num: {sequence_numbers[0]}", file=sys.stderr)
         if sequence_numbers[1] != 5:
-            print(
-                f"invalid 3 digit sequence 2nd num: {sequence_numbers[1]}",
-                file=sys.stderr,
-            )
+            print(f"invalid 3 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
         color_index = sequence_numbers[2]
         return [
             sequence_numbers[0],
@@ -168,15 +156,9 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
 
     if len(sequence_numbers) == 5:  # 24 bit color
         if sequence_numbers[0] not in [38, 48]:
-            print(
-                f"invalid 5 digit sequence 1st num: {sequence_numbers[0]}",
-                file=sys.stderr,
-            )
+            print(f"invalid 5 digit sequence 1st num: {sequence_numbers[0]}", file=sys.stderr)
         if sequence_numbers[1] != 2:
-            print(
-                f"invalid 5 digit sequence 2nd num: {sequence_numbers[1]}",
-                file=sys.stderr,
-            )
+            print(f"invalid 5 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
         return [
             sequence_numbers[0],
             2,
