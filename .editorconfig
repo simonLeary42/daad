@@ -1,0 +1,15 @@
+# top-most EditorConfig file
+root = true
+
+[*]
+# unix-style newlines with a newline ending every file
+end_of_line = lf
+insert_final_newline = true
+
+trim_trailing_whitespace = true
+
+# https://github.com/editorconfig/editorconfig/issues/404
+# https://github.com/mvdan/sh/issues/664
+[[shell]]
+indent_style = space
+indent_size = 4

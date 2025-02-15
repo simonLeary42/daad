@@ -112,9 +112,7 @@ def find_closest_discord_color(
     elif sequence_1st_number == 48:
         hex_to_4bit_index = DISCORD_BG_HEX_TO_4BIT_INDEX
     else:
-        raise RuntimeError(
-            f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}"
-        )
+        raise RuntimeError(f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}")
     sorted_discord_hex = sorted(
         hex_to_4bit_index.keys(),
         key=lambda discord_hex: color_distance(hex2rgb(discord_hex), rgb),
@@ -133,9 +131,7 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         return [0]
 
     if len(sequence_numbers) == 1:  # 4 bit formatting OR color
-        if sequence_numbers[0] not in [0, 1, 4] + (
-            list(range(30, 38)) + list(range(40, 48))
-        ):
+        if sequence_numbers[0] not in [0, 1, 4] + (list(range(30, 38)) + list(range(40, 48))):
             print(f"invalid 1 digit sequence: {sequence_numbers}", file=sys.stderr)
         return sequence_numbers
 
@@ -167,9 +163,7 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         return [
             sequence_numbers[0],
             5,
-            find_closest_discord_color(
-                FAKE_8BIT_INDEX_TO_HEX[color_index], sequence_numbers[0]
-            ),
+            find_closest_discord_color(FAKE_8BIT_INDEX_TO_HEX[color_index], sequence_numbers[0]),
         ]
 
     if len(sequence_numbers) == 5:  # 24 bit color
