@@ -1,0 +1,20 @@
+[1mdiff --git a/ansi-discord.py b/ansi-discord.py[m
+[1mindex c0637aa..256f4e9 100755[m
+[1m--- a/ansi-discord.py[m
+[1m+++ b/ansi-discord.py[m
+[36m@@ -97,6 +97,7 @@[m [mdef color_distance(rgb1, rgb2):[m
+
+
+ [38;2;197;134;192mdef[38;2;220;220;220m [38;2;220;220;170mfind_closest_discord_color[38;2;220;220;220m([38;2;156;220;254mrgb[38;2;220;220;220m: list[int], [38;2;156;220;254msequence_1st_number[38;2;220;220;220m: int, [38;2;156;220;254mdo_enhance_vibrancy[38;2;220;220;220m=[38;2;86;156;214mTrue[38;2;220;220;220m):[0m
+[48;2;0;40;0m+[38;2;220;220;220m    [38;2;214;157;133m"round the given rgb value to the nearest discord 4 bit color"[0m[48;2;0;40;0m[0K[0m
+ [38;2;220;220;220m    [38;2;197;134;192mif[38;2;220;220;220m do_enhance_vibrancy:[0m
+ [38;2;220;220;220m        rgb = [38;2;156;220;254menhance_vibrancy[38;2;220;220;220m(rgb)[0m
+ [38;2;220;220;220m    [38;2;197;134;192mif[38;2;220;220;220m sequence_1st_number == [38;2;181;206;168m38[38;2;220;220;220m:[0m
+[36m@@ -112,9 +113,6 @@[m [mdef find_closest_discord_color(rgb: list[int], sequence_1st_number: int, do_enha[m
+ [38;2;220;220;220m    sorted_discord_hex = sorted([0m
+ [38;2;220;220;220m        hex_to_4bit_index.[38;2;156;220;254mkeys[38;2;220;220;220m(), [38;2;156;220;254mkey[38;2;220;220;220m=[38;2;197;134;192mlambda[38;2;220;220;220m [38;2;156;220;254mdiscord_hex[38;2;220;220;220m: [38;2;156;220;254mcolor_distance[38;2;220;220;220m([38;2;156;220;254mhex2rgb[38;2;220;220;220m(discord_hex), rgb)[0m
+ [38;2;220;220;220m    )[0m
+[48;2;63;0;1m-    # print([0m[48;2;63;0;1m[0K[0m
+[48;2;63;0;1m-    #    f"closest to \033[38;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb}\033[0m: {sorted_discord_hex}"[0m[48;2;63;0;1m[0K[0m
+[48;2;63;0;1m-    # )[0m[48;2;63;0;1m[0K[0m
+ [38;2;220;220;220m    [38;2;197;134;192mreturn[38;2;220;220;220m hex_to_4bit_index[sorted_discord_hex[[38;2;181;206;168m0[38;2;220;220;220m]][0m

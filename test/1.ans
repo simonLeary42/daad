@@ -1,0 +1,15 @@
+[1mdiff --git a/.emacs b/.emacs[0m
+[1mindex 9ac2d34..4d5c0dd 100644[0m
+[1m--- a/.emacs[0m
+[1m+++ b/.emacs[0m
+[36m@@ -181,6 +181,10 @@[0m
+ ;; enable helpful keymapping suggestions in various places[0m
+ (global-discover-mode 1)[0m
+ [0m
+[32m+[0m[32m;; DELETEME custom build of emacs-dashboard[0m
+[32m+[0m[32m(add-to-list 'load-path "/Users/simon/unity/emacs-dashboard/.eask/29.4/elpa/dashboard-1.9.0snapshot/")[0m
+[32m+[0m[32m(require 'dashboard)[0m
+[32m+[0m
+ (setq dashboard-items '((recents   . 10)[0m
+                         (projects  . 10)[0m
+                         (bookmarks . 10)))[0m
