@@ -1,3 +1,4 @@
 .envrc
 venv
 *.pyc
+env.bat
