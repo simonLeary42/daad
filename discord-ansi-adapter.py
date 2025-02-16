@@ -205,4 +205,4 @@ for chunk in chunks:
     new_numbers_str = [str(x) for x in new_numbers]
     message_chunks.append(f"\033[{";".join(new_numbers_str)}m")
 
-print(f"```ansi\n{"".join(message_chunks)}\n```")
+print("".join(message_chunks))
