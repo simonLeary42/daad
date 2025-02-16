@@ -151,7 +151,9 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         return [
             sequence_numbers[0],
             5,
-            find_closest_discord_color(FAKE_8BIT_INDEX_TO_HEX[color_index], sequence_numbers[0]),
+            find_closest_discord_color(
+                hex2rgb(FAKE_8BIT_INDEX_TO_HEX[color_index]), sequence_numbers[0]
+            ),
         ]
 
     if len(sequence_numbers) == 5:  # 24 bit color
