@@ -5,9 +5,14 @@ import time
 import textwrap
 import traceback
 import discord
+import json
 
 DISCORD_MESSAGE_CHAR_LIMIT = 2000
 AFTER_MESSAGE_SLEEP_SECONDS = 0.2
+
+if os.path.exists(".env.json"):
+    with open(".env.json", "r", encoding="utf8") as f:
+        os.environ.update(json.load(f))
 
 TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 CHANNEL_ID = int(os.environ["DISCORD_CHANNEL_ID"])

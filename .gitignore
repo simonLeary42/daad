@@ -1,4 +1,4 @@
 .envrc
 venv
 *.pyc
-env.bat
+.env.json
