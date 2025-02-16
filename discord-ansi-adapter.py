@@ -88,14 +88,26 @@ def hex2rgb(hex: str) -> list[int]:
     return [int(x, 16) for x in [r_str, g_str, b_str]]
 
 
+def rgb2hex(rgb: list[int]) -> str:
+    return "#" + "".join([hex(x)[2:].zfill(2) for x in rgb])
+
+
 def color_distance(rgb1, rgb2):
     "calculate Euclidean distance between two RGB colors"
     return sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(rgb1, rgb2)))
 
 
 def format_rgb_escape_code_colored(rgb: list[int]) -> None:
-    "return '[r, g, b]' with their own color"
-    return f"\033[38;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb}\033[0m"
+    """
+    print rgb value as hex code styled using ANSI escape sequences
+    uses black or white background depending on brightness
+    """
+    bold = "\033[1m"
+    if sum(rgb) < ((255 * 3) / 2):  # if less than 50% brightness
+        white_background = "\033[48;2;255;255;255m"
+        return f"{white_background}{bold}\033[38;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb2hex(rgb)}\033[0m"
+    black_background = "\033[48;2;0;0;0m"
+    return f"{black_background}{bold}\033[38;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb2hex(rgb)}\033[0m"
 
 
 def find_closest_discord_color(
@@ -105,12 +117,14 @@ def find_closest_discord_color(
         rgb = increase_saturation(rgb)
     if sequence_1st_number == 38:
         hex_to_4bit_index = DISCORD_FG_HEX_TO_4BIT_INDEX
+        fg_or_bg = "foreground"
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
         if all(num > 200 for num in rgb):
             return 37
     elif sequence_1st_number == 48:
         hex_to_4bit_index = DISCORD_BG_HEX_TO_4BIT_INDEX
+        fg_or_bg = "background"
     else:
         raise RuntimeError(f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}")
     sorted_discord_hex = sorted(
@@ -120,7 +134,7 @@ def find_closest_discord_color(
     if DEBUG:
         sorted_discord_rgb = [hex2rgb(x) for x in sorted_discord_hex]
         print(
-            f"closest to {format_rgb_escape_code_colored(rgb)}: {", ".join([format_rgb_escape_code_colored(x) for x in sorted_discord_rgb])}",
+            f"closest {fg_or_bg} to {format_rgb_escape_code_colored(rgb)}: {", ".join([format_rgb_escape_code_colored(x) for x in sorted_discord_rgb])}",
             file=sys.stderr,
         )
     return hex_to_4bit_index[sorted_discord_hex[0]]
