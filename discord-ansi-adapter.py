@@ -79,11 +79,11 @@ def increase_saturation(rgb: list[int], factor=10) -> list[int]:
     return tuple(int(x * 255) for x in (r, g, b))
 
 
-def hex2rgb(hex: str) -> list[int]:
-    if hex[0] == "#":
-        hex = hex[1:]  # strip leading '#' if it exists
-    assert isinstance(hex, str) and (len(hex) == 6), "string of length 6 is required!"
-    r_str, g_str, b_str = hex[:2], hex[2:4], hex[4:]
+def hex2rgb(_hex: str) -> list[int]:
+    if _hex[0] == "#":
+        _hex = _hex[1:]  # strip leading '#' if it exists
+    assert isinstance(_hex, str) and (len(_hex) == 6), "string of length 6 is required!"
+    r_str, g_str, b_str = _hex[:2], _hex[2:4], _hex[4:]
     return [int(x, 16) for x in [r_str, g_str, b_str]]
 
 
