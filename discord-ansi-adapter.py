@@ -165,10 +165,11 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         return sequence_numbers
 
     if len(sequence_numbers) == 2:  # 4 bit formatting AND color
-        if sequence_numbers[0] not in [0, 1, 4]:
-            raise InvalidSequenceError(f"invalid 2 digit sequence 1st num: {sequence_numbers[0]}")
-        if sequence_numbers[1] not in (list(range(30, 38)) + list(range(40, 48))):
-            raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}")
+        formatting, color_index = sequence_numbers
+        if formatting not in [0, 1, 4]:
+            raise InvalidSequenceError(f"invalid 2 digit sequence 1st num: {formatting}")
+        if color_index not in (list(range(30, 38)) + list(range(40, 48))):
+            raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {color_index}")
         return sequence_numbers
 
     if len(sequence_numbers) == 3:  # 8 bit color
