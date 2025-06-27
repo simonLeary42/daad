@@ -182,10 +182,8 @@ def find_closest_discord_color(
 
 
 def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
-    # input sequence can be 0, 1, 2, 3, or 5 numbers
+    # input sequence can be 1, 2, 3, or 5 numbers
     # output sequence can be 1 or 2 numbers
-    if len(sequence_numbers) == 0:  # empty sequence implies reset
-        return [0]
 
     if len(sequence_numbers) == 1:  # 4 bit formatting OR color
         if sequence_numbers[0] in (VALID_4BIT_FG_INDEXES + VALID_4BIT_BG_INDEXES):
@@ -256,20 +254,16 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
 chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
 message_chunks = []
 for chunk in chunks:
-    if not re.match(ANSI_ESCAPE_8BIT, chunk):
+    if (not re.match(ANSI_ESCAPE_8BIT, chunk)) or chunk == "\x1b[m":
         message_chunks.append(chunk)
         continue
     sequence = chunk[2:]  # remove '\x1b['
     sequence = sequence[:-1]  # remove 'm'
     sequence_numbers = []
-    for sequence_number_str in sequence.split(";"):
-        try:
-            sequence_numbers.append(int(sequence_number_str))
-        except ValueError:
-            if sequence_number_str == "":
-                sequence_numbers.append(0)  # default 0 for empty number
-            else:
-                print(f"invalid sequence number string: {sequence_number_str}")
+    try:
+        sequence_numbers = [int(x) for x in sequence]
+    except ValueError:
+        print(f"invalid sequence: '{sequence}'")
     try:
         new_numbers = process_sequence_numbers(sequence_numbers)
         new_numbers_str = [str(x) for x in new_numbers]
