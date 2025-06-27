@@ -191,6 +191,7 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         if sequence_numbers[0] in (VALID_4BIT_FG_INDEXES + VALID_4BIT_BG_INDEXES):
             sequence_numbers = [0, sequence_numbers[0]]  # become length 2, handle later
         elif sequence_numbers[0] not in VALID_FORMAT_INDEXES:
+            # can't substitute with 0 because that would reset all formatting
             raise InvalidSequenceError(
                 f"invalid 1 digit sequence: [{sequence_numbers[0]}]", file=sys.stderr
             )
@@ -200,9 +201,12 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
     if len(sequence_numbers) == 2:  # 4 bit formatting AND color
         formatting, color_index = sequence_numbers
         if formatting not in VALID_FORMAT_INDEXES:
-            raise InvalidSequenceError(
-                f"invalid 2 digit sequence 1st num: {formatting}", file=sys.stderr
+            # can substitute with 0 because it has no effect when followed with a color
+            print(
+                f"ignoring unsupported 1st number of sequence: {sequence_numbers[0]}",
+                file=sys.stderr,
             )
+            formatting = 0
         if color_index in VALID_4BIT_FG_INDEXES:
             return [
                 formatting,
