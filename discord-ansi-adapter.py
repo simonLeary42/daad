@@ -169,8 +169,6 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
             print(f"invalid 3 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
         color_index = sequence_numbers[2]
         return [
-            sequence_numbers[0],
-            5,
             find_closest_discord_color(
                 hex2rgb(FAKE_8BIT_INDEX_TO_HEX[color_index]), sequence_numbers[0]
             ),
@@ -182,8 +180,6 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         if sequence_numbers[1] != 2:
             print(f"invalid 5 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
         return [
-            sequence_numbers[0],
-            2,
             find_closest_discord_color(sequence_numbers[2:], sequence_numbers[0]),
         ]
 
