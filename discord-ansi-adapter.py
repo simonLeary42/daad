@@ -181,7 +181,53 @@ def find_closest_discord_color(
     return hex_to_4bit_index[sorted_discord_hex[0]]
 
 
-def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
+def join_sequence(sequence: list[int]) -> str:
+    return "\x1b[" + ";".join([str(x) for x in sequence]) + "m"
+
+
+def process_sequence(sequence: str) -> str:
+    sequence = sequence[2:]  # remove '\x1b['
+    sequence = sequence[:-1]  # remove 'm'
+    sequence = sequence.split(";")
+    # special case: 0;38:2:x:r:g:b;48:2:x:r:g:b (not sure what x is so I ignore it)
+    if (
+        len(sequence) == 3
+        and sequence[0] == "0"
+        and sequence[1].startswith("38:2:")
+        and sequence[2].startswith("48:2:")
+    ):
+        try:
+            fg_rgb = [int(x) for x in sequence[1].split(":")[-3:]]
+            bg_rgb = [int(x) for x in sequence[2].split(":")[-3:]]
+        except ValueError as e:
+            raise InvalidSequenceError(sequence) from e
+        return "%s%s" % (
+            join_sequence(_process_sequence([38, 2] + fg_rgb)),
+            join_sequence(_process_sequence([48, 2] + bg_rgb)),
+        )
+    # special case: 0;38:2:x:r:g:b (not sure what x is so I ignore it)
+    if len(sequence) == 2 and sequence[0] == "0" and sequence[1].startswith("38:2:"):
+        try:
+            rgb = [int(x) for x in sequence[1].split(":")[-3:]]
+        except ValueError as e:
+            raise InvalidSequenceError(sequence) from e
+        return join_sequence(_process_sequence([38, 2] + rgb))
+    # special case: 0;48:2:x:r:g:b (not sure what x is so I ignore it)
+    if len(sequence) == 2 and sequence[0] == "0" and sequence[1].startswith("48:2:"):
+        try:
+            rgb = [int(x) for x in sequence[1].split(":")[-3:]]
+        except ValueError as e:
+            raise InvalidSequenceError(sequence) from e
+        return join_sequence(_process_sequence([48, 2] + rgb))
+    # normal case
+    try:
+        sequence = [int(x) for x in sequence]
+    except ValueError:
+        raise InvalidSequenceError(sequence) from e
+    return join_sequence(_process_sequence(sequence))
+
+
+def _process_sequence(sequence_numbers: list[int]) -> list[int]:
     # input sequence can be 1, 2, 3, or 5 numbers
     # output sequence can be 1 or 2 numbers
 
@@ -252,23 +298,11 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
 
 
 chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
-message_chunks = []
 for chunk in chunks:
     if (not re.match(ANSI_ESCAPE_8BIT, chunk)) or chunk == "\x1b[m":
-        message_chunks.append(chunk)
-        continue
-    sequence = chunk[2:]  # remove '\x1b['
-    sequence = sequence[:-1]  # remove 'm'
-    sequence_numbers = []
-    try:
-        sequence_numbers = [int(x) for x in sequence]
-    except ValueError:
-        print(f"invalid sequence: '{sequence}'")
-    try:
-        new_numbers = process_sequence_numbers(sequence_numbers)
-        new_numbers_str = [str(x) for x in new_numbers]
-        message_chunks.append(f"\033[{";".join(new_numbers_str)}m")
-    except InvalidSequenceError as e:
-        print(e, file=sys.stderr)
-        continue
-print("".join(message_chunks))
+        print(chunk, end="")
+    else:
+        try:
+            print(process_sequence(chunk), end="")
+        except InvalidSequenceError as e:
+            print(e, file=sys.stderr)
