@@ -71,6 +71,10 @@ FAKE_8BIT_INDEX_TO_HEX = [
 # fmt: on
 
 
+class InvalidSequenceError(Exception):
+    pass
+
+
 def increase_saturation(rgb: list[int], factor=10) -> list[int]:
     r, g, b = [x / 255.0 for x in rgb]  # Normalize to 0-1
     h, l, s = colorsys.rgb_to_hls(r, g, b)  # Convert to HLS
@@ -133,7 +137,9 @@ def find_closest_discord_color(
         if all(num > 200 for num in rgb):
             return 47
     else:
-        raise RuntimeError(f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}")
+        raise InvalidSequenceError(
+            f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}"
+        )
     sorted_discord_hex = sorted(
         hex_to_4bit_index.keys(),
         key=lambda discord_hex: color_distance(hex2rgb(discord_hex), rgb),
@@ -155,21 +161,21 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
 
     if len(sequence_numbers) == 1:  # 4 bit formatting OR color
         if sequence_numbers[0] not in [0, 1, 4] + (list(range(30, 38)) + list(range(40, 48))):
-            print(f"invalid 1 digit sequence: {sequence_numbers}", file=sys.stderr)
+            raise InvalidSequenceError(f"invalid 1 digit sequence: {sequence_numbers}")
         return sequence_numbers
 
     if len(sequence_numbers) == 2:  # 4 bit formatting AND color
         if sequence_numbers[0] not in [0, 1, 4]:
-            print(f"invalid 2 digit sequence 1st num: {sequence_numbers[0]}", file=sys.stderr)
+            raise InvalidSequenceError(f"invalid 2 digit sequence 1st num: {sequence_numbers[0]}")
         if sequence_numbers[1] not in (list(range(30, 38)) + list(range(40, 48))):
-            print(f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
+            raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}")
         return sequence_numbers
 
     if len(sequence_numbers) == 3:  # 8 bit color
         if sequence_numbers[0] not in [38, 48]:
-            print(f"invalid 3 digit sequence 1st num: {sequence_numbers[0]}", file=sys.stderr)
+            raise InvalidSequenceError(f"invalid 3 digit sequence 1st num: {sequence_numbers[0]}")
         if sequence_numbers[1] != 5:
-            print(f"invalid 3 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
+            raise InvalidSequenceError(f"invalid 3 digit sequence 2nd num: {sequence_numbers[1]}")
         color_index = sequence_numbers[2]
         return [
             find_closest_discord_color(
@@ -179,14 +185,14 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
 
     if len(sequence_numbers) == 5:  # 24 bit color
         if sequence_numbers[0] not in [38, 48]:
-            print(f"invalid 5 digit sequence 1st num: {sequence_numbers[0]}", file=sys.stderr)
+            raise InvalidSequenceError(f"invalid 5 digit sequence 1st num: {sequence_numbers[0]}")
         if sequence_numbers[1] != 2:
-            print(f"invalid 5 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr)
+            raise InvalidSequenceError("invalid 5 digit sequence 2nd num: {sequence_numbers[1]}")
         return [
             find_closest_discord_color(sequence_numbers[2:], sequence_numbers[0]),
         ]
 
-    raise RuntimeError(f"too many numbers in sequence: {sequence_numbers}")
+    raise InvalidSequenceError(f"too many numbers in sequence: {sequence_numbers}")
 
 
 chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
@@ -206,8 +212,11 @@ for chunk in chunks:
                 sequence_numbers.append(0)  # default 0 for empty number
             else:
                 print(f"invalid sequence number string: {sequence_number_str}")
-    new_numbers = process_sequence_numbers(sequence_numbers)
-    new_numbers_str = [str(x) for x in new_numbers]
-    message_chunks.append(f"\033[{";".join(new_numbers_str)}m")
-
+    try:
+        new_numbers = process_sequence_numbers(sequence_numbers)
+        new_numbers_str = [str(x) for x in new_numbers]
+        message_chunks.append(f"\033[{";".join(new_numbers_str)}m")
+    except InvalidSequenceError as e:
+        print(e, file=sys.stderr)
+        continue
 print("".join(message_chunks))
