@@ -19,7 +19,7 @@ DISCORD_FG_HEX_TO_4BIT_INDEX = {
     "2076C7": 34,  # blue
     "C61B6F": 35,  # pink
     "259286": 36,  # cyan
-    # "FFFFFF": 37,  # white
+    # "FFFFFF": 37, # white is a special case, see below
 }
 
 DISCORD_BG_HEX_TO_4BIT_INDEX = {
@@ -30,7 +30,7 @@ DISCORD_BG_HEX_TO_4BIT_INDEX = {
     "708285": 44,  # gray
     "595AB7": 45,  # indigo
     "819090": 46,  # light gray
-    "FCF4DC": 47,  # white
+    # "FCF4DC": 47,  # white is a special case, see below
 }
 
 # fmt: off
@@ -127,6 +127,10 @@ def find_closest_discord_color(
         hex_to_4bit_index = DISCORD_BG_HEX_TO_4BIT_INDEX
         fg_or_bg = "background"
         reverse = True
+        # light colors tend to become white, so we made all other colors preferred unless the
+        # input color is *really* white (RGB all > 200)
+        if all(num > 200 for num in rgb):
+            return 47
     else:
         raise RuntimeError(f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}")
     sorted_discord_hex = sorted(
