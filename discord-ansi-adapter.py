@@ -33,6 +33,31 @@ DISCORD_BG_HEX_TO_4BIT_INDEX = {
     # "FCF4DC": 47,  # white is a special case, see below
 }
 
+# these colors are customizable by a terminal emulator, so we must assume a reasonable default
+FAKE_4BIT_FG_INDEX_TO_HEX = {}
+FAKE_4BIT_BG_INDEX_TO_HEX = {}
+RELATIVE_4BIT_INDEX_TO_HEX = {
+    0: "000000",  # black
+    1: "B83019",  # red
+    2: "51BF37",  # green
+    3: "C6C43D",  # yellow
+    4: "0C24BF",  # blue
+    5: "B93EC1",  # magenta
+    6: "53C2C5",  # cyan
+    7: "FFFFFF",  # white
+}
+for x in 30, 90:  # 30 is foreground color, 90 is same + high intensity
+    for offset, _hex in RELATIVE_4BIT_INDEX_TO_HEX.items():
+        FAKE_4BIT_FG_INDEX_TO_HEX[x + offset] = _hex
+for x in 40, 100:  # 40 is background color, 100 is same + high intensity
+    for offset, _hex in RELATIVE_4BIT_INDEX_TO_HEX.items():
+        FAKE_4BIT_BG_INDEX_TO_HEX[x + offset] = _hex
+VALID_4BIT_FG_INDEXES = list(FAKE_4BIT_FG_INDEX_TO_HEX.keys())
+VALID_4BIT_BG_INDEXES = list(FAKE_4BIT_BG_INDEX_TO_HEX.keys())
+
+VALID_FORMAT_INDEXES = [0, 1, 4]  # discord only supports reset, bold, underline
+
+# these colors are customizable by a terminal emulator, so we must assume a reasonable default
 # fmt: off
 FAKE_8BIT_INDEX_TO_HEX = [
     "#000000", "#800000", "#008000", "#808000", "#000080", "#800080", "#008080", "#c0c0c0",
@@ -116,21 +141,19 @@ def format_rgb_escape_code_colored(rgb: list[int], reverse=False) -> None:
 
 
 def find_closest_discord_color(
-    rgb: list[int], sequence_1st_number: int, do_increase_saturation=True
-):
+    rgb: list[int], foreground_or_background: str, do_increase_saturation=True
+) -> int:
     if do_increase_saturation:
         rgb = increase_saturation(rgb)
-    if sequence_1st_number == 38:
+    if foreground_or_background == "foreground":
         hex_to_4bit_index = DISCORD_FG_HEX_TO_4BIT_INDEX
-        fg_or_bg = "foreground"
         reverse = False
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
         if all(num > 200 for num in rgb):
             return 37
-    elif sequence_1st_number == 48:
+    elif foreground_or_background == "background":
         hex_to_4bit_index = DISCORD_BG_HEX_TO_4BIT_INDEX
-        fg_or_bg = "background"
         reverse = True
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
@@ -138,7 +161,7 @@ def find_closest_discord_color(
             return 47
     else:
         raise InvalidSequenceError(
-            f"expected sequence 1st number of 38 or 48, got {sequence_1st_number}"
+            f"neither 'foreground' nor 'background': '{foreground_or_background}'"
         )
     sorted_discord_hex = sorted(
         hex_to_4bit_index.keys(),
@@ -148,9 +171,9 @@ def find_closest_discord_color(
         # fmt: off
         print(
             "closest %s to %s: %s" % (
-                fg_or_bg,
+                foreground_or_background,
                 format_rgb_escape_code_colored(rgb, reverse=reverse),
-                {", ".join([format_rgb_escape_code_colored(hex2rgb(x), reverse=reverse) for x in sorted_discord_hex])}
+                ", ".join([format_rgb_escape_code_colored(hex2rgb(x), reverse=reverse) for x in sorted_discord_hex])
             ),
             file=sys.stderr,
         )
@@ -165,17 +188,38 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         return [0]
 
     if len(sequence_numbers) == 1:  # 4 bit formatting OR color
-        if sequence_numbers[0] not in [0, 1, 4] + (list(range(30, 38)) + list(range(40, 48))):
-            raise InvalidSequenceError(f"invalid 1 digit sequence: {sequence_numbers}")
-        return sequence_numbers
+        if sequence_numbers[0] in (VALID_4BIT_FG_INDEXES + VALID_4BIT_BG_INDEXES):
+            sequence_numbers = [0, sequence_numbers[0]]  # become length 2, handle later
+        elif sequence_numbers[0] not in VALID_FORMAT_INDEXES:
+            raise InvalidSequenceError(
+                f"invalid 1 digit sequence: [{sequence_numbers[0]}]", file=sys.stderr
+            )
+        else:
+            return sequence_numbers
 
     if len(sequence_numbers) == 2:  # 4 bit formatting AND color
         formatting, color_index = sequence_numbers
-        if formatting not in [0, 1, 4]:
-            raise InvalidSequenceError(f"invalid 2 digit sequence 1st num: {formatting}")
-        if color_index not in (list(range(30, 38)) + list(range(40, 48))):
-            raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {color_index}")
-        return sequence_numbers
+        if formatting not in VALID_FORMAT_INDEXES:
+            raise InvalidSequenceError(
+                f"invalid 2 digit sequence 1st num: {formatting}", file=sys.stderr
+            )
+        if color_index in VALID_4BIT_FG_INDEXES:
+            return [
+                formatting,
+                find_closest_discord_color(
+                    hex2rgb(FAKE_4BIT_FG_INDEX_TO_HEX[color_index]), "foreground"
+                ),
+            ]
+        if color_index in VALID_4BIT_BG_INDEXES:
+            return [
+                formatting,
+                find_closest_discord_color(
+                    hex2rgb(FAKE_4BIT_BG_INDEX_TO_HEX[color_index]), "background"
+                ),
+            ]
+        raise InvalidSequenceError(
+            f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr
+        )
 
     if len(sequence_numbers) == 3:  # 8 bit color
         if sequence_numbers[0] not in [38, 48]:
@@ -185,7 +229,8 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         color_index = sequence_numbers[2]
         return [
             find_closest_discord_color(
-                hex2rgb(FAKE_8BIT_INDEX_TO_HEX[color_index]), sequence_numbers[0]
+                hex2rgb(FAKE_8BIT_INDEX_TO_HEX[color_index]),
+                "foreground" if sequence_numbers[0] == 38 else "background",
             ),
         ]
 
@@ -195,7 +240,10 @@ def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
         if sequence_numbers[1] != 2:
             raise InvalidSequenceError("invalid 5 digit sequence 2nd num: {sequence_numbers[1]}")
         return [
-            find_closest_discord_color(sequence_numbers[2:], sequence_numbers[0]),
+            find_closest_discord_color(
+                sequence_numbers[2:],
+                "foreground" if sequence_numbers[0] == 38 else "background",
+            )
         ]
 
     raise InvalidSequenceError(f"too many numbers in sequence: {sequence_numbers}")
