@@ -100,6 +100,7 @@ def format_rgb_escape_code_colored(rgb: list[int], reverse=False) -> None:
     """
     print rgb value as hex code styled using ANSI escape sequences
     uses black or white background depending on brightness
+    for debugging purposes
     """
     bold = "\033[1m"
     reverse_or_empty = "\033[7m" if reverse else ""
