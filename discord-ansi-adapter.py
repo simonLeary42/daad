@@ -125,19 +125,18 @@ def color_distance(rgb1, rgb2):
     return sqrt(sum((c1 - c2) ** 2 for c1, c2 in zip(rgb1, rgb2)))
 
 
-def format_rgb_escape_code_colored(rgb: list[int], reverse=False) -> None:
+def format_rgb_escape_code_colored(rgb: list[int]) -> None:
     """
     print rgb value as hex code styled using ANSI escape sequences
     uses black or white background depending on brightness
     for debugging purposes
     """
     bold = "\033[1m"
-    reverse_or_empty = "\033[7m" if reverse else ""
     if sum(rgb) < ((255 * 3) / 2):  # if less than 50% brightness
-        white_background = "\033[48;2;255;255;255m"
-        return f"{white_background}{bold}\033[38;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{reverse_or_empty}{rgb2hex(rgb)}\033[0m"
-    black_background = "\033[48;2;0;0;0m"
-    return f"{black_background}{bold}\033[38;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{reverse_or_empty}{rgb2hex(rgb)}\033[0m"
+        white_foreground = "\033[38;2;255;255;255m"
+        return f"{white_foreground}{bold}\033[48;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb2hex(rgb)}\033[0m"
+    black_foreground = "\033[38;2;0;0;0m"
+    return f"{black_foreground}{bold}\033[48;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb2hex(rgb)}\033[0m"
 
 
 def find_closest_discord_color(
@@ -147,14 +146,12 @@ def find_closest_discord_color(
         rgb = increase_saturation(rgb)
     if foreground_or_background == "foreground":
         hex_to_4bit_index = DISCORD_FG_HEX_TO_4BIT_INDEX
-        reverse = False
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
         if all(num > 200 for num in rgb):
             return 37
     elif foreground_or_background == "background":
         hex_to_4bit_index = DISCORD_BG_HEX_TO_4BIT_INDEX
-        reverse = True
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
         if all(num > 200 for num in rgb):
@@ -172,8 +169,8 @@ def find_closest_discord_color(
         print(
             "closest %s to %s: %s" % (
                 foreground_or_background,
-                format_rgb_escape_code_colored(rgb, reverse=reverse),
-                ", ".join([format_rgb_escape_code_colored(hex2rgb(x), reverse=reverse) for x in sorted_discord_hex])
+                format_rgb_escape_code_colored(rgb),
+                ", ".join([format_rgb_escape_code_colored(hex2rgb(x)) for x in sorted_discord_hex])
             ),
             file=sys.stderr,
         )
