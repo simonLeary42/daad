@@ -148,6 +148,8 @@ def find_closest_discord_color(
 
 
 def process_sequence_numbers(sequence_numbers: list[int]) -> list[int]:
+    # input sequence can be 0, 1, 2, 3, or 5 numbers
+    # output sequence can be 1 or 2 numbers
     if len(sequence_numbers) == 0:  # empty sequence implies reset
         return [0]
 
