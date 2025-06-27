@@ -145,11 +145,16 @@ def find_closest_discord_color(
         key=lambda discord_hex: color_distance(hex2rgb(discord_hex), rgb),
     )
     if DEBUG:
-        sorted_discord_rgb = [hex2rgb(x) for x in sorted_discord_hex]
+        # fmt: off
         print(
-            f"closest {fg_or_bg} to {format_rgb_escape_code_colored(rgb, reverse=reverse)}: {", ".join([format_rgb_escape_code_colored(x, reverse=reverse) for x in sorted_discord_rgb])}",
+            "closest %s to %s: %s" % (
+                fg_or_bg,
+                format_rgb_escape_code_colored(rgb, reverse=reverse),
+                {", ".join([format_rgb_escape_code_colored(hex2rgb(x), reverse=reverse) for x in sorted_discord_hex])}
+            ),
             file=sys.stderr,
         )
+        # fmt: on
     return hex_to_4bit_index[sorted_discord_hex[0]]
 
 
