@@ -1,7 +1,7 @@
 # [daad](): [D]()iscord [A]()NSI [ad]()apter
 
 converts ANSI color escape sequences from stdin into the limited 4-bit sequences supported by discord.
-rounds 256color and true color escape sequences to the colors displayed in the discord client using Euclidian distance.
+selects the Discord color with the lowest Euclidian distance to the target color.
 
 ## example:
 
