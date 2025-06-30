@@ -299,7 +299,7 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
             )
         ]
 
-    raise InvalidSequenceError(f"too many numbers in sequence: {sequence_numbers}")
+    raise InvalidSequenceError(f"sequence length is not 1, 2, 3, or 5: {sequence_numbers}")
 
 
 chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
