@@ -4,7 +4,7 @@ import sys
 from math import sqrt
 import colorsys
 
-DEBUG = True
+DEBUG = False
 
 # https://stackoverflow.com/a/14693789/18696276
 ANSI_ESCAPE_8BIT = re.compile(
