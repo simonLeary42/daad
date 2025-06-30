@@ -144,27 +144,23 @@ def format_rgb_escape_code_colored(rgb: list[int]) -> None:
     return f"{black_foreground}{bold}\033[48;2;{str(rgb[0])};{str(rgb[1])};{str(rgb[2])}m{rgb2hex(rgb)}\033[0m"
 
 
-def find_closest_discord_color(
-    rgb: list[int], foreground_or_background: str, do_increase_saturation=True
-) -> int:
+def find_closest_discord_color(rgb: list[int], fg_or_bg: str, do_increase_saturation=True) -> int:
     if do_increase_saturation:
         rgb = increase_saturation(rgb)
-    if foreground_or_background == "foreground":
+    if fg_or_bg == "foreground":
         hex_to_4bit_index = DISCORD_FG_HEX_TO_4BIT_INDEX
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
         if all(num > 200 for num in rgb):
             return 37
-    elif foreground_or_background == "background":
+    elif fg_or_bg == "background":
         hex_to_4bit_index = DISCORD_BG_HEX_TO_4BIT_INDEX
         # light colors tend to become white, so we made all other colors preferred unless the
         # input color is *really* white (RGB all > 200)
         if all(num > 200 for num in rgb):
             return 47
     else:
-        raise InvalidSequenceError(
-            f"neither 'foreground' nor 'background': '{foreground_or_background}'"
-        )
+        raise InvalidSequenceError(f"neither 'foreground' nor 'background': '{fg_or_bg}'")
     sorted_discord_hex = sorted(
         hex_to_4bit_index.keys(),
         key=lambda discord_hex: color_distance(hex2rgb(discord_hex), rgb),
@@ -173,7 +169,7 @@ def find_closest_discord_color(
         # fmt: off
         print(
             "closest %s to %s: %s" % (
-                foreground_or_background,
+                fg_or_bg,
                 format_rgb_escape_code_colored(rgb),
                 ", ".join([format_rgb_escape_code_colored(hex2rgb(x)) for x in sorted_discord_hex])
             ),
