@@ -160,7 +160,7 @@ def find_closest_discord_color(rgb: list[int], fg_or_bg: str, do_increase_satura
         if all(num > 200 for num in rgb):
             return 47
     else:
-        raise InvalidSequenceError(f"neither 'foreground' nor 'background': '{fg_or_bg}'")
+        raise RuntimeError(f"neither 'foreground' nor 'background': '{fg_or_bg}'")
     sorted_discord_hex = sorted(
         hex_to_4bit_index.keys(),
         key=lambda discord_hex: color_distance(hex2rgb(discord_hex), rgb),
