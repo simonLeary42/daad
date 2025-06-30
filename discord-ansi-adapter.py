@@ -56,7 +56,11 @@ VALID_4BIT_FG_INDEXES = list(FAKE_4BIT_FG_INDEX_TO_HEX.keys())
 VALID_4BIT_BG_INDEXES = list(FAKE_4BIT_BG_INDEX_TO_HEX.keys())
 VALID_4BIT_INDEXES = VALID_4BIT_FG_INDEXES + VALID_4BIT_BG_INDEXES
 
-VALID_FORMAT_INDEXES = [0, 1, 4]  # discord only supports reset, bold, underline
+# in this case, "format index" is a CSR parameter which is not color
+# discord only supports reset, bold, underline
+# 21 (end bold) and 24 (end underline) do not work as of 2025/6/29
+# TODO find a better word than "index"
+SUPPORTED_FORMAT_INDEXES = [0, 1, 4]
 
 # these colors are customizable by a terminal emulator, so we must assume a reasonable default
 # fmt: off
@@ -244,14 +248,14 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
     # output sequence can be 1 or 2 numbers
 
     if len(sequence_numbers) == 1:  # 4 bit formatting
-        if sequence_numbers[0] not in VALID_FORMAT_INDEXES:
+        if sequence_numbers[0] not in SUPPORTED_FORMAT_INDEXES:
             # can't substitute with 0 because that would reset all formatting
             raise InvalidSequenceError(f"invalid 1 digit sequence: [{sequence_numbers[0]}]")
         return sequence_numbers
 
     if len(sequence_numbers) == 2:  # 4 bit formatting and color
         formatting, color_index = sequence_numbers
-        if formatting not in VALID_FORMAT_INDEXES:
+        if formatting not in SUPPORTED_FORMAT_INDEXES:
             # can substitute with 0 because it has no effect when followed with a color
             print(
                 f"ignoring unsupported 1st number of sequence: {sequence_numbers[0]}",
