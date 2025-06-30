@@ -233,9 +233,7 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
             sequence_numbers = [0, sequence_numbers[0]]  # become length 2, handle later
         elif sequence_numbers[0] not in VALID_FORMAT_INDEXES:
             # can't substitute with 0 because that would reset all formatting
-            raise InvalidSequenceError(
-                f"invalid 1 digit sequence: [{sequence_numbers[0]}]", file=sys.stderr
-            )
+            raise InvalidSequenceError(f"invalid 1 digit sequence: [{sequence_numbers[0]}]")
         else:
             return sequence_numbers
 
@@ -262,9 +260,7 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
                     hex2rgb(FAKE_4BIT_BG_INDEX_TO_HEX[color_index]), "background"
                 ),
             ]
-        raise InvalidSequenceError(
-            f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}", file=sys.stderr
-        )
+        raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}")
 
     if len(sequence_numbers) == 3:  # 8 bit color
         if sequence_numbers[0] not in [38, 48]:
