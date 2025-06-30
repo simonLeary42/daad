@@ -54,6 +54,7 @@ for x in 40, 100:  # 40 is background color, 100 is same + high intensity
         FAKE_4BIT_BG_INDEX_TO_HEX[x + offset] = _hex
 VALID_4BIT_FG_INDEXES = list(FAKE_4BIT_FG_INDEX_TO_HEX.keys())
 VALID_4BIT_BG_INDEXES = list(FAKE_4BIT_BG_INDEX_TO_HEX.keys())
+VALID_4BIT_INDEXES = VALID_4BIT_FG_INDEXES + VALID_4BIT_BG_INDEXES
 
 VALID_FORMAT_INDEXES = [0, 1, 4]  # discord only supports reset, bold, underline
 
@@ -216,11 +217,22 @@ def process_sequence(sequence: str) -> str:
         except ValueError as e:
             raise InvalidSequenceError(sequence) from e
         return join_sequence(_process_sequence([48, 2] + rgb))
-    # normal case
+    # cast to int
     try:
         sequence = [int(x) for x in sequence]
     except ValueError:
         raise InvalidSequenceError(sequence) from e
+    # special case 1;31;41 (4 bit formatting and foreground and background)
+    if (
+        len(sequence) == 3
+        and sequence[1] in VALID_4BIT_INDEXES
+        and sequence[2] in VALID_4BIT_INDEXES
+    ):
+        return "%s%s" % (
+            join_sequence(_process_sequence([sequence[0], sequence[1]])),
+            join_sequence(_process_sequence([sequence[0], sequence[2]])),
+        )
+    # normal case
     return join_sequence(_process_sequence(sequence))
 
 
@@ -229,7 +241,7 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
     # output sequence can be 1 or 2 numbers
 
     if len(sequence_numbers) == 1:  # 4 bit formatting OR color
-        if sequence_numbers[0] in (VALID_4BIT_FG_INDEXES + VALID_4BIT_BG_INDEXES):
+        if sequence_numbers[0] in VALID_4BIT_INDEXES:
             sequence_numbers = [0, sequence_numbers[0]]  # become length 2, handle later
         elif sequence_numbers[0] not in VALID_FORMAT_INDEXES:
             # can't substitute with 0 because that would reset all formatting
