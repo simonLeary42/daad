@@ -306,8 +306,8 @@ chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
 for chunk in chunks:
     if (not re.match(ANSI_ESCAPE_8BIT, chunk)) or chunk == "\x1b[m":
         print(chunk, end="")
-    else:
-        try:
-            print(process_sequence(chunk), end="")
-        except InvalidSequenceError as e:
-            print(e, file=sys.stderr)
+        continue
+    try:
+        print(process_sequence(chunk), end="")
+    except InvalidSequenceError as e:
+        print(e, file=sys.stderr)
