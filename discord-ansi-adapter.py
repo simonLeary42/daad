@@ -208,20 +208,20 @@ def process_sequence(sequence: str) -> str:
         try:
             rgb = [int(x) for x in sequence[1].split(":")[-3:]]
         except ValueError as e:
-            raise InvalidSequenceError(sequence) from e
+            raise InvalidSequenceError(f"failed to cast to int: {sequence}") from e
         return join_sequence(_process_sequence([38, 2] + rgb))
     # special case: 0;48:2:x:r:g:b (not sure what x is so I ignore it)
     if len(sequence) == 2 and sequence[0] == "0" and sequence[1].startswith("48:2:"):
         try:
             rgb = [int(x) for x in sequence[1].split(":")[-3:]]
         except ValueError as e:
-            raise InvalidSequenceError(sequence) from e
+            raise InvalidSequenceError(f"failed to cast to int: {sequence}") from e
         return join_sequence(_process_sequence([48, 2] + rgb))
     # cast to int
     try:
         sequence = [int(x) for x in sequence]
     except ValueError:
-        raise InvalidSequenceError(sequence) from e
+        raise InvalidSequenceError(f"failed to cast to int: {sequence}") from e
     # special case 1;31;41 (4 bit formatting and foreground and background)
     if (
         len(sequence) == 3
@@ -246,7 +246,7 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
     if len(sequence_numbers) == 1:  # 4 bit formatting
         if sequence_numbers[0] not in SUPPORTED_FORMAT_INDEXES:
             # can't substitute with 0 because that would reset all formatting
-            raise InvalidSequenceError(f"invalid 1 digit sequence: [{sequence_numbers[0]}]")
+            raise InvalidSequenceError(f"invalid 1 digit sequence: {sequence_numbers}")
         return sequence_numbers
 
     if len(sequence_numbers) == 2:  # 4 bit formatting and color
@@ -254,7 +254,7 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
         if formatting not in SUPPORTED_FORMAT_INDEXES:
             # can substitute with 0 because it has no effect when followed with a color
             print(
-                f"ignoring unsupported 1st number of sequence: {sequence_numbers[0]}",
+                f"ignoring unsupported 1st number of sequence: {sequence_numbers}",
                 file=sys.stderr,
             )
             formatting = 0
@@ -272,13 +272,13 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
                     hex2rgb(FAKE_4BIT_BG_INDEX_TO_HEX[color_index]), "background"
                 ),
             ]
-        raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {sequence_numbers[1]}")
+        raise InvalidSequenceError(f"invalid 2 digit sequence 2nd num: {sequence_numbers}")
 
     if len(sequence_numbers) == 3:  # 8 bit color
         if sequence_numbers[0] not in [38, 48]:
-            raise InvalidSequenceError(f"invalid 3 digit sequence 1st num: {sequence_numbers[0]}")
+            raise InvalidSequenceError(f"invalid 3 digit sequence 1st num: {sequence_numbers}")
         if sequence_numbers[1] != 5:
-            raise InvalidSequenceError(f"invalid 3 digit sequence 2nd num: {sequence_numbers[1]}")
+            raise InvalidSequenceError(f"invalid 3 digit sequence 2nd num: {sequence_numbers}")
         color_index = sequence_numbers[2]
         return [
             find_closest_discord_color(
@@ -289,9 +289,9 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
 
     if len(sequence_numbers) == 5:  # 24 bit color
         if sequence_numbers[0] not in [38, 48]:
-            raise InvalidSequenceError(f"invalid 5 digit sequence 1st num: {sequence_numbers[0]}")
+            raise InvalidSequenceError(f"invalid 5 digit sequence 1st num: {sequence_numbers}")
         if sequence_numbers[1] != 2:
-            raise InvalidSequenceError("invalid 5 digit sequence 2nd num: {sequence_numbers[1]}")
+            raise InvalidSequenceError(f"invalid 5 digit sequence 2nd num: {sequence_numbers}")
         return [
             find_closest_discord_color(
                 sequence_numbers[2:],
