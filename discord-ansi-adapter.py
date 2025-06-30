@@ -232,6 +232,9 @@ def process_sequence(sequence: str) -> str:
             join_sequence(_process_sequence([sequence[0], sequence[1]])),
             join_sequence(_process_sequence([sequence[0], sequence[2]])),
         )
+    # special case: 31 (4 bit color with no leading formatting)
+    if (len(sequence) == 1) and (sequence[0] in VALID_4BIT_INDEXES):
+        return join_sequence(_process_sequence([0, sequence[0]]))
     # normal case
     return join_sequence(_process_sequence(sequence))
 
@@ -240,16 +243,13 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
     # input sequence can be 1, 2, 3, or 5 numbers
     # output sequence can be 1 or 2 numbers
 
-    if len(sequence_numbers) == 1:  # 4 bit formatting OR color
-        if sequence_numbers[0] in VALID_4BIT_INDEXES:
-            sequence_numbers = [0, sequence_numbers[0]]  # become length 2, handle later
-        elif sequence_numbers[0] not in VALID_FORMAT_INDEXES:
+    if len(sequence_numbers) == 1:  # 4 bit formatting
+        if sequence_numbers[0] not in VALID_FORMAT_INDEXES:
             # can't substitute with 0 because that would reset all formatting
             raise InvalidSequenceError(f"invalid 1 digit sequence: [{sequence_numbers[0]}]")
-        else:
-            return sequence_numbers
+        return sequence_numbers
 
-    if len(sequence_numbers) == 2:  # 4 bit formatting AND color
+    if len(sequence_numbers) == 2:  # 4 bit formatting and color
         formatting, color_index = sequence_numbers
         if formatting not in VALID_FORMAT_INDEXES:
             # can substitute with 0 because it has no effect when followed with a color
