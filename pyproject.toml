@@ -8,5 +8,9 @@ dependencies = [
     "discord-py>=2.7.1",
 ]
 
+[project.scripts]
+discord-ansi-adapter = "daad.discord_ansi_adapter:main"
+discord-message = "daad.discord_message:main"
+
 [tool.black]
 line-length = 100
