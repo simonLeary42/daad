@@ -302,12 +302,17 @@ def _process_sequence(sequence_numbers: list[int]) -> list[int]:
     raise InvalidSequenceError(f"sequence length is not 1, 2, 3, or 5: {sequence_numbers}")
 
 
-chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
-for chunk in chunks:
-    if (not re.match(ANSI_ESCAPE_8BIT, chunk)) or chunk == "\x1b[m":
-        print(chunk, end="")
-        continue
-    try:
-        print(process_sequence(chunk), end="")
-    except InvalidSequenceError as e:
-        print(e, file=sys.stderr)
+def main():
+    chunks = re.split(ANSI_ESCAPE_8BIT, sys.stdin.read())
+    for chunk in chunks:
+        if (not re.match(ANSI_ESCAPE_8BIT, chunk)) or chunk == "\x1b[m":
+            print(chunk, end="")
+            continue
+        try:
+            print(process_sequence(chunk), end="")
+        except InvalidSequenceError as e:
+            print(e, file=sys.stderr)
+
+
+if __name__ == "__main__":
+    main()
